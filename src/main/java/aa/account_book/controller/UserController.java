@@ -112,5 +112,5 @@ public class UserController {
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
-    @DeleteMapping
+
 }
