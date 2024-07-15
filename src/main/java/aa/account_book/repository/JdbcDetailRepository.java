@@ -69,8 +69,8 @@ public class JdbcDetailRepository implements DetailRepository{
         return new LocalDate[] {firstDay, lastDay};
     }
 
-    private int findLatestDetailBalance(String userId) {
-        String sql = "select * from detail where userId = ? order by date DESC, time DESC";
+    public int findLatestDetailBalance(String userId) {
+        String sql = "select * from detail where userId = ? order by index DESC";
         List<Detail> result = jdbcTemplate.query(sql, detailRowMapper(), userId);
         Optional<Detail> latestDetail = result.stream().findFirst();
 
@@ -84,6 +84,7 @@ public class JdbcDetailRepository implements DetailRepository{
             detail.setUserId(rs.getString("userId"));
             detail.setDate(rs.getObject("date", LocalDate.class));
             detail.setTime(rs.getObject("time", LocalTime.class));
+            detail.setType(rs.getString("type").charAt(0));
             detail.setDetail(rs.getString("detail"));
             detail.setAmount(rs.getInt("amount"));
             detail.setBalance(rs.getInt("balance"));

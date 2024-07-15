@@ -11,4 +11,5 @@ public interface DetailRepository {
     Optional<Detail> readDetailByIndex(int index);
     List<Detail> readDetailListToday(String userId);
     List<Detail> readDetailListByMonth(LocalDate date, String userId);
+    int findLatestDetailBalance(String userId);
 }
