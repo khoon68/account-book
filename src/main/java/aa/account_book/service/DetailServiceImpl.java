@@ -28,6 +28,9 @@ public class DetailServiceImpl implements DetailService{
             detail.setBalance(latestDetailBalance - detail.getAmount());
         } else detail.setBalance(latestDetailBalance + detail.getAmount());
 
+        detail.setDate(LocalDate.now());
+        detail.setTime(LocalTime.now());
+
         return detailRepository.insertDetail(detail);
     }
 
@@ -56,7 +59,7 @@ public class DetailServiceImpl implements DetailService{
         detailToBeAdded.setUserId(detailToBeCanceled.getUserId());
         detailToBeAdded.setDate(LocalDate.now());
         detailToBeAdded.setTime(LocalTime.now());
-        detailToBeAdded.setDetail(detailToBeCanceled.getDate() + " " + detailToBeCanceled.getTime() + "자 내역 취소");
+        detailToBeAdded.setDetail(detailToBeCanceled.getDate() + " " + detailToBeCanceled.getTime() + "때의 내역 취소");
         detailToBeAdded.setAmount(detailToBeCanceled.getAmount());
         return detailRepository.insertDetail(detailToBeAdded);
     }

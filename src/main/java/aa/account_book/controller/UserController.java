@@ -1,5 +1,6 @@
 package aa.account_book.controller;
 
+import aa.account_book.domain.ResponseWrapper;
 import aa.account_book.domain.User;
 import aa.account_book.dto.LoginForm;
 import aa.account_book.dto.RegisterForm;
@@ -28,28 +29,18 @@ public class UserController {
     @Autowired
     private final UserService userService;
 
-    @GetMapping("/register")
-    public String showRegisterPage() {
-        return "user/register-page";
-    }
-
     @PostMapping("/register")
-    public ResponseEntity<Map<String, String>> register(
+    public ResponseEntity<ResponseWrapper> register(
             @Valid @RequestBody RegisterForm form,
             BindingResult bindingResult
     ) {
 
-        Map<String, String> res = new HashMap<>();
+        ResponseWrapper resWrapper = new ResponseWrapper();
 
         if(bindingResult.hasErrors()) {
-            res.put("success", "no");
-            res.put("message", "비어있는 칸이 있습니다.");
-
-            bindingResult.getFieldErrors()
-                    .forEach(
-                            error -> res.put(error.getField(), error.getDefaultMessage())
-                    );
-            return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+            resWrapper.setSuccess("no");
+            resWrapper.setMessage("비어있는 칸이 있습니다.");
+            return new ResponseEntity<>(resWrapper, HttpStatus.BAD_REQUEST);
         }
 
         try {
@@ -59,57 +50,52 @@ public class UserController {
                     form.getName()
             );
             userService.registerUser(user);
-            res.put("success", "yes");
-            return new ResponseEntity<>(res, HttpStatus.CREATED);
+            resWrapper.setSuccess("yes");
+            return new ResponseEntity<>(resWrapper, HttpStatus.CREATED);
         } catch(Exception e) {
-            res.put("success", "no");
-            res.put("message", e.getMessage());
-            return new ResponseEntity<>(res, HttpStatus.CONFLICT);
+            resWrapper.setSuccess("no");
+            resWrapper.setSuccess(e.getMessage());
+            return new ResponseEntity<>(resWrapper, HttpStatus.CONFLICT);
         }
     }
 
-    @GetMapping("/login")
-    public String showLoginPage() {
-        return "user/login-page";
-    }
-
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(
+    public ResponseEntity<ResponseWrapper> login(
             @Valid @RequestBody LoginForm form,
             BindingResult bindingResult,
             HttpServletRequest req
     ) {
-        Map<String, String> res = new HashMap<>();
+        ResponseWrapper resWrapper = new ResponseWrapper();
+
         if(bindingResult.hasErrors()) {
-            res.put("success", "no");
-            res.put("message", "비어있는 칸이 있습니다.");
+            resWrapper.setSuccess("no");
+            resWrapper.setMessage("비어있는 칸이 있습니다.");
 
-            bindingResult.getFieldErrors().forEach(error -> res.put(error.getField(), error.getDefaultMessage()));
-
-            return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(resWrapper, HttpStatus.BAD_REQUEST);
         }
 
         User loginUser = userService.login(form.getUserId(), form.getPassword());
         if(loginUser.getUserId().isEmpty()) {
-            res.put("success", "no");
-            res.put("message", "아이디 또는 비밀번호에 해당하는 계정이 없습니다.");
-            return new ResponseEntity<>(res, HttpStatus.CONFLICT);
+            resWrapper.setSuccess("no");
+            resWrapper.setMessage("아이디 또는 비밀번호에 해당하는 계정이 없습니다.");
+            return new ResponseEntity<>(resWrapper, HttpStatus.CONFLICT);
         }
         HttpSession session = req.getSession();
+        session.setMaxInactiveInterval(30 * 60);
         session.setAttribute(SessionConst.LOGIN_SESSION, loginUser);
-        res.put("success", "ok");
+        resWrapper.setSuccess("yes");
 
-        return new ResponseEntity<>(res, HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(resWrapper, HttpStatus.ACCEPTED);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Map<String, String>> logout(HttpServletRequest req) {
+    public ResponseEntity<ResponseWrapper> logout(HttpServletRequest req) {
         HttpSession session = req.getSession(false);
         if(session != null) session.invalidate();
 
-        Map<String, String> res = new HashMap<>();
-        res.put("success", "yes");
-        return new ResponseEntity<>(res, HttpStatus.OK);
+        ResponseWrapper resWrapper = new ResponseWrapper();
+        resWrapper.setSuccess("yes");
+        return new ResponseEntity<>(resWrapper, HttpStatus.OK);
     }
 
 
