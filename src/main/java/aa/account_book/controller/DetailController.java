@@ -48,7 +48,7 @@ public class DetailController {
     @PostMapping("/detail/today/")
     public ResponseEntity<ResponseWrapper> addDetail(@RequestBody AddDetailForm form, HttpServletRequest req) {
         ResponseWrapper resWrapper = new ResponseWrapper();
-        
+
         HttpSession session = req.getSession(false);
         User loginUser = (User) session.getAttribute(SessionConst.LOGIN_SESSION);
 
