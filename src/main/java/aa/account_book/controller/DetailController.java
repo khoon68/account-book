@@ -46,10 +46,13 @@ public class DetailController {
     }
 
     @PostMapping("/detail/today/")
-    public ResponseEntity<ResponseWrapper> addDetail(@RequestBody AddDetailForm form) {
+    public ResponseEntity<ResponseWrapper> addDetail(@RequestBody AddDetailForm form, HttpServletRequest req) {
         ResponseWrapper resWrapper = new ResponseWrapper();
+        
+        HttpSession session = req.getSession(false);
+        User loginUser = (User) session.getAttribute(SessionConst.LOGIN_SESSION);
 
-        Detail detail = new Detail(form.getUserId(), LocalDate.now(), LocalTime.now(), form.getType(), form.getDetail(), form.getAmount());
+        Detail detail = new Detail(loginUser.getUserId(), LocalDate.now(), LocalTime.now(), form.getType(), form.getDetail(), form.getAmount());
         try {
             detailService.addDetail(detail);
             resWrapper.setSuccess("yes");

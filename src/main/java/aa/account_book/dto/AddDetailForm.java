@@ -5,8 +5,7 @@ import lombok.Data;
 
 @Data
 public class AddDetailForm {
-    @NotEmpty
-    private String userId;
+
     @NotEmpty
     private char type;
     @NotEmpty
@@ -14,8 +13,7 @@ public class AddDetailForm {
     @NotEmpty
     private int amount;
 
-    public AddDetailForm(String userId, char type, String detail, int amount) {
-        this.userId = userId;
+    public AddDetailForm(char type, String detail, int amount) {
         this.type = type;
         this.detail = detail;
         this.amount = amount;
