@@ -55,6 +55,8 @@ public class LoginCheckInterceptor implements HandlerInterceptor {
             return false;
         }
 
+        session.setMaxInactiveInterval(60 * 30);
+
         return true;
     }
 }
