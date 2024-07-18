@@ -14,11 +14,10 @@ public class Detail {
     char type;
     String detail;
     int amount;
-    int balance;
 
     public Detail() {}
 
-    public Detail(int index, String userId, LocalDate date, LocalTime time, char type, String detail, int amount, int balance) {
+    public Detail(int index, String userId, LocalDate date, LocalTime time, char type, String detail, int amount) {
         this.index = index;
         this.userId = userId;
         this.date = date;
@@ -26,6 +25,14 @@ public class Detail {
         this.type = type;
         this.detail = detail;
         this.amount = amount;
-        this.balance = balance;
+    }
+
+    public Detail(String userId, LocalDate date, LocalTime time, char type, String detail, int amount) {
+        this.userId = userId;
+        this.date = date;
+        this.time = time;
+        this.type = type;
+        this.detail = detail;
+        this.amount = amount;
     }
 }

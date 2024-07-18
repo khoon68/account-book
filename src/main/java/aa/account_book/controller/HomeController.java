@@ -1,26 +1,24 @@
 package aa.account_book.controller;
 
-import aa.account_book.domain.User;
-import aa.account_book.service.SessionConst;
+import aa.account_book.dto.ResponseWrapper;
+import aa.account_book.Session.SessionConst;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.Getter;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.SessionAttribute;
 
-import java.util.Map;
+@RestController
+public class HomeController {
+    @GetMapping("/")
+    public ResponseEntity<ResponseWrapper<Boolean>> getUserSessionStatus(HttpServletRequest req) {
+        HttpSession session = req.getSession(false);
+        ResponseWrapper<Boolean> resWrapper = new ResponseWrapper<>();
+        resWrapper.setSuccess("yes");
+        if(session == null || session.getAttribute(SessionConst.LOGIN_SESSION) == null) resWrapper.setData(false);
+        else resWrapper.setData(true);
 
-//@RestController
-////public class HomeController {
-////    @GetMapping("/")
-////    public ResponseEntity<Map<String, String>> loginHome(
-////            @SessionAttribute(name=SessionConst.LOGIN_SESSION, required = false) User loginUser,
-////            RequestBody req
-////    ) {
-////
-////    }
-////}
+        return new ResponseEntity<>(resWrapper, HttpStatus.OK);
+    }
+}

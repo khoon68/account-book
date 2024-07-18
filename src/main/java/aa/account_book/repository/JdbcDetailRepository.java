@@ -25,7 +25,7 @@ public class JdbcDetailRepository implements DetailRepository{
     }
 
     @Override
-    public Detail insertDetail(Detail detail) {
+    public int insertDetail(Detail detail) {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate);
         simpleJdbcInsert.withTableName("detail").usingGeneratedKeyColumns("index");
 
@@ -36,13 +36,13 @@ public class JdbcDetailRepository implements DetailRepository{
         parameters.put("type", detail.getType());
         parameters.put("detail", detail.getDetail());
         parameters.put("amount", detail.getAmount());
-        parameters.put("balance", detail.getBalance());
+
 
         Number key = simpleJdbcInsert.executeAndReturnKey(parameters);
         int index = key.intValue();
         detail.setIndex(index);
 
-        return detail;
+        return index;
     }
 
     @Override
@@ -57,26 +57,22 @@ public class JdbcDetailRepository implements DetailRepository{
     }
 
     @Override
-    public List<Detail> readDetailListByMonth(LocalDate date, String userId) {
-        LocalDate[] firstDayAndLastDayOfMonth = getFirstDayAndLastDayOfMonth(date);
-        return jdbcTemplate.query("select * from detail where userId = ? and date Between ? and  ?", detailRowMapper(),userId, firstDayAndLastDayOfMonth[0], firstDayAndLastDayOfMonth[1]);
+    public List<Detail> readDetailListByMonth(LocalDate firstDate, String userId) {
+        LocalDate lastDate = getLastDayOfMonth(firstDate);
+        return jdbcTemplate.query("select * from detail where userId = ? and date Between ? and  ?", detailRowMapper(),userId, firstDate, lastDate);
     }
 
-    private LocalDate[] getFirstDayAndLastDayOfMonth(LocalDate date) {
-        YearMonth yearMonth = YearMonth.of(date.getYear(), date.getMonth());
-        LocalDate firstDay = yearMonth.atDay(1);
-        LocalDate lastDay = yearMonth.atEndOfMonth();
-        return new LocalDate[] {firstDay, lastDay};
+    @Override
+    public int updateDetail(Detail detail) {
+        jdbcTemplate.update("update DETAIL set type = ?, detail = ?, amount = ? where index = ?", detail.getType(), detail.getDetail(), detail.getAmount(), detail.getIndex());
+
+        return detail.getIndex();
     }
 
-    public int findLatestDetailBalance(String userId) {
-        String sql = "select * from detail where userId = ? order by index DESC";
-        List<Detail> result = jdbcTemplate.query(sql, detailRowMapper(), userId);
-        Optional<Detail> latestDetail = result.stream().findFirst();
-
-        return latestDetail.map(Detail::getBalance).orElse(0);
+    private LocalDate getLastDayOfMonth(LocalDate firstDate) {
+        YearMonth yearMonth = YearMonth.of(firstDate.getYear(), firstDate.getMonth());
+        return yearMonth.atEndOfMonth();
     }
-
     private RowMapper<Detail> detailRowMapper() {
         return (rs, rowNum) -> {
             Detail detail = new Detail();
@@ -87,7 +83,6 @@ public class JdbcDetailRepository implements DetailRepository{
             detail.setType(rs.getString("type").charAt(0));
             detail.setDetail(rs.getString("detail"));
             detail.setAmount(rs.getInt("amount"));
-            detail.setBalance(rs.getInt("balance"));
 
             return detail;
         };

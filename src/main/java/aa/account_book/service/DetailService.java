@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DetailService {
-    Detail addDetail(Detail detail);
-    Detail cancelDetailByIndex(int index);
+    int addDetail(Detail detail);
+    int editDetail(Detail detail);
     List<Detail> findDetailListToday(String userid);
     List<Detail> findDetailListByMonth(LocalDate date, String userId);
 }

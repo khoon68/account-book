@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DetailRepository {
-    Detail insertDetail(Detail detail);
+    int insertDetail(Detail detail);
     Optional<Detail> readDetailByIndex(int index);
     List<Detail> readDetailListToday(String userId);
-    List<Detail> readDetailListByMonth(LocalDate date, String userId);
-    int findLatestDetailBalance(String userId);
+    List<Detail> readDetailListByMonth(LocalDate firstDate, String userId);
+    int updateDetail(Detail detail);
 }

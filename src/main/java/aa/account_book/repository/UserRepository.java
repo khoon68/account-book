@@ -9,6 +9,5 @@ public interface UserRepository {
     void insertUser(User user);
     Optional<User> readUserById(String userId);
     List<User> readAllUser();
-    void deleteUserByUserId(String userId);
-    void updateUser(User user);
+    void updateUserBalance(String userId, int balance);
 }

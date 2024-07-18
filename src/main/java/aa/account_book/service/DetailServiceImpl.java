@@ -1,10 +1,13 @@
 package aa.account_book.service;
 
 import aa.account_book.domain.Detail;
+import aa.account_book.domain.User;
 import aa.account_book.repository.DetailRepository;
+import aa.account_book.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -17,51 +20,52 @@ public class DetailServiceImpl implements DetailService{
     @Autowired
     DetailRepository detailRepository;
 
+    @Autowired
+    UserRepository userRepository;
+
+    @Transactional
     @Override
-    public Detail addDetail(Detail detail) {
-        int latestDetailBalance = detailRepository.findLatestDetailBalance(detail.getUserId());
+    public int addDetail(Detail detail) {
+        User user = getUser(detail);
+        int latestDetailBalance = user.getBalance();
 
         if(detail.getType() == '-') {
             if(detail.getAmount() > latestDetailBalance) {
-                throw new RuntimeException("잔액이 취소해야 할 입금액보다 적습니다.");
+                throw new IllegalStateException("잔액이 출금액보다 적습니다.");
             }
-            detail.setBalance(latestDetailBalance - detail.getAmount());
-        } else detail.setBalance(latestDetailBalance + detail.getAmount());
+            userRepository.updateUserBalance(user.getUserId(), latestDetailBalance - detail.getAmount());
+        } else userRepository.updateUserBalance(user.getUserId(), latestDetailBalance + detail.getAmount());
 
-        detail.setDate(LocalDate.now());
-        detail.setTime(LocalTime.now());
 
         return detailRepository.insertDetail(detail);
     }
 
-
+    @Transactional
     @Override
-    public Detail cancelDetailByIndex(int index) {
-        Optional<Detail> foundDetail = detailRepository.readDetailByIndex(index);
+    public int editDetail(Detail updatedDetail) {
+        Optional<Detail> foundDetail = detailRepository.readDetailByIndex(updatedDetail.getIndex());
 
-        if(foundDetail.isEmpty()) throw new RuntimeException("해당되는 내역이 존재하지 않습니다.");
+        if(foundDetail.isEmpty()) throw new IllegalStateException("해당되는 내역이 존재하지 않습니다.");
+        Detail originalDetail = foundDetail.get();
 
-        Detail detailToBeCanceled = foundDetail.get();
-        Detail detailToBeAdded = new Detail();
-        int latestDetailBalance = detailRepository.findLatestDetailBalance(detailToBeCanceled.getUserId());
+        User user = getUser(updatedDetail);
+        int latestDetailBalance = user.getBalance();
 
-        if(detailToBeCanceled.getType() == '+') {
-            if(detailToBeCanceled.getAmount() > latestDetailBalance) {
-                throw new RuntimeException("잔액이 취소해야 할 입금액보다 적습니다.");
-            }
-            detailToBeAdded.setType('-');
-            detailToBeAdded.setBalance(latestDetailBalance - detailToBeCanceled.getAmount());
-        } else {
-            detailToBeAdded.setType('+');
-            detailToBeAdded.setBalance(latestDetailBalance + detailToBeCanceled.getAmount());
-        }
-        
-        detailToBeAdded.setUserId(detailToBeCanceled.getUserId());
-        detailToBeAdded.setDate(LocalDate.now());
-        detailToBeAdded.setTime(LocalTime.now());
-        detailToBeAdded.setDetail(detailToBeCanceled.getDate() + " " + detailToBeCanceled.getTime() + "때의 내역 취소");
-        detailToBeAdded.setAmount(detailToBeCanceled.getAmount());
-        return detailRepository.insertDetail(detailToBeAdded);
+        int originalDetailAmount = originalDetail.getAmount();
+        int updatedDetailAmount = updatedDetail.getAmount();
+
+        if(originalDetail.getType() == '+') originalDetailAmount *= -1;
+        if(updatedDetail.getType() == '-') updatedDetailAmount *= -1;
+
+        int updatedDetailBalance = latestDetailBalance + originalDetailAmount + updatedDetailAmount;
+
+        if(updatedDetailBalance < 0)
+            throw new IllegalStateException("잔액이 0보다 작아져 수정할 수 없습니다.");
+
+        int index = detailRepository.updateDetail(updatedDetail);
+        userRepository.updateUserBalance(updatedDetail.getUserId(), updatedDetailBalance);
+
+        return index;
     }
 
     @Override
@@ -72,5 +76,13 @@ public class DetailServiceImpl implements DetailService{
     @Override
     public List<Detail> findDetailListByMonth(LocalDate date, String userId) {
         return detailRepository.readDetailListByMonth(date, userId);
+    }
+
+    private User getUser(Detail detail) {
+        Optional<User> optionalUser = userRepository.readUserById(detail.getUserId());
+        if(optionalUser.isEmpty()) throw new IllegalStateException("해당 내역의 유저가 존재하지 않습니다.");
+
+        User user = optionalUser.get();
+        return user;
     }
 }

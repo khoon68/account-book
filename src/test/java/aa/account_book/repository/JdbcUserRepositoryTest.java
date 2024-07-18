@@ -18,8 +18,8 @@ class JdbcUserRepositoryTest {
 
     @BeforeEach
     void beforeEach() {
-        userRepository.insertUser(new User("test1", "pw1", "name1"));
-        userRepository.insertUser(new User("test2", "pw2", "name2"));
+        userRepository.insertUser(new User("test1", "pw1", "name1", 0));
+        userRepository.insertUser(new User("test2", "pw2", "name2", 0));
     }
 
     @Test
@@ -34,15 +34,8 @@ class JdbcUserRepositoryTest {
     }
 
     @Test
-    void deleteUserByUserId() {
-        userRepository.deleteUserByUserId("test1");
-        Assertions.assertThat(userRepository.readAllUser().size()).isEqualTo(1);
-    }
-
-    @Test
-    void updateUser() {
-        userRepository.updateUser(new User("test1", "pw11", "name11"));
-        User test1User = userRepository.readUserById("test1").get();
-        Assertions.assertThat(test1User.getName()).isEqualTo("name11");
+    void updateUserBalance() {
+        userRepository.updateUserBalance("test1", 1000);
+        Assertions.assertThat(userRepository.readUserById("test1").get().getBalance()).isEqualTo(1000);
     }
 }

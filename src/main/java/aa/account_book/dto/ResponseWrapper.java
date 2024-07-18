@@ -1,4 +1,4 @@
-package aa.account_book.domain;
+package aa.account_book.dto;
 
 import lombok.Data;
 

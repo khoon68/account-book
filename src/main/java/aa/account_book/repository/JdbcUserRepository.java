@@ -32,6 +32,7 @@ public class JdbcUserRepository implements UserRepository{
         parameters.put("userid", user.getUserId());
         parameters.put("password", user.getPassword());
         parameters.put("name", user.getName());
+        parameters.put("balance", user.getBalance());
 
         jdbcInsert.execute(parameters);
     }
@@ -48,14 +49,8 @@ public class JdbcUserRepository implements UserRepository{
     }
 
     @Override
-    public void deleteUserByUserId(String userId) {
-        jdbcTemplate.update("delete user where userId = ?", userId);
-    }
-
-    @Override
-    public void updateUser(User user) {
-        String sql = "update user set password = ?, name = ? where userId = ?";
-        jdbcTemplate.update(sql, user.getPassword(), user.getName(), user.getUserId());
+    public void updateUserBalance(String userId, int balance) {
+        jdbcTemplate.update("update USER set balance = ? where userId = ?", balance, userId);
     }
 
     private RowMapper<User> userRowMapper() {
@@ -64,6 +59,7 @@ public class JdbcUserRepository implements UserRepository{
             user.setUserId(rs.getString("userId"));
             user.setPassword(rs.getString("password"));
             user.setName(rs.getString("name"));
+            user.setBalance(rs.getInt("balance"));
             return user;
         };
     }

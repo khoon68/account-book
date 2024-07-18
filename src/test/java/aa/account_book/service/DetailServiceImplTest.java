@@ -1,6 +1,7 @@
 package aa.account_book.service;
 
 import aa.account_book.domain.Detail;
+import aa.account_book.domain.User;
 import aa.account_book.repository.DetailRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,56 +26,63 @@ class DetailServiceImplTest {
     @Autowired
     DetailRepository detailRepository;
 
+    @Autowired UserService userService;
+
+    @BeforeEach()
+    void beforeEach() {
+        userService.registerUser(new User("test1", "pw1", "name1", 0));
+    }
+
     @Test
     void addDetailTest() {
-        Detail detail1 = new Detail(0, "test1", LocalDate.now(), LocalTime.now(), '+', "내역 추가 확인용1", 10000, 0);
-        Detail detail2 = new Detail(0, "test1", LocalDate.now(), LocalTime.now(), '-', "내역 추가 확인용2", 1000, 0);
+        Detail detail1 = new Detail("test1", LocalDate.now(), LocalTime.now(), '+', "내역 추가 확인용1", 10000);
+        Detail detail2 = new Detail("test1", LocalDate.now(), LocalTime.now(), '-', "내역 추가 확인용2", 1000);
 
-        detailService.addDetail(detail1);
-        Detail addedDetail = detailService.addDetail(detail2);
+        int index1 = detailService.addDetail(detail1);
+        int index2 = detailService.addDetail(detail2);
 
-        Assertions.assertThat(addedDetail.getDetail()).isEqualTo(detail2.getDetail());
+        Assertions.assertThat(detailRepository.readDetailByIndex(index2).get().getDetail()).isEqualTo(detail2.getDetail());
     }
     
     @Test
+    @DisplayName("현재 잔액보다 더 큰 금액을 출금하는 경우")
     void addDetailError() {
-        Detail detail = new Detail(0, "test1", LocalDate.now(), LocalTime.now(), '-', "내역 추가 에러 확인용", 1000, 0);
-        Assertions.assertThatThrownBy(() -> detailService.addDetail(detail)).isInstanceOf(RuntimeException.class);
+        Detail detail = new Detail("test1", LocalDate.now(), LocalTime.now(), '-', "내역 추가 에러 확인용", 1000);
+        Assertions.assertThatThrownBy(() -> detailService.addDetail(detail)).isInstanceOf(IllegalStateException.class).hasMessage("잔액이 출금액보다 적습니다.");
     }
 
     @Test
-    @DisplayName("바로 이전에 추가한 내역을 취소하는 경우")
+    @DisplayName("바로 이전에 추가한 내역을 수정하는 경우")
     void cancelDetailByIndexTest1() {
-        Detail detail1 = new Detail(0, "test1", LocalDate.now(), LocalTime.now(), '+', "취소될 내역", 1000, 0);
-        Detail addedDetail = detailService.addDetail(detail1);
-        Detail detail2 = detailService.cancelDetailByIndex(addedDetail.getIndex());
-        Assertions.assertThat(detail2.getBalance()).isEqualTo(0);
+        Detail detail1 = new Detail("test1", LocalDate.now(), LocalTime.now(), '+', "수정될 내역", 1000);
+        int index = detailService.addDetail(detail1);
+
+        detailService.editDetail(new Detail(index, detail1.getUserId(), LocalDate.now(), LocalTime.now(), '+', "수정한 내역", 0));
+        Assertions.assertThat(detailRepository.readDetailByIndex(index).get().getDetail()).isEqualTo("수정한 내역");
     }
 
-    @Test
-    @DisplayName("여러 개를 추가한 후 제일 먼저 추가한 내역을 취소하는 경우")
-    void cancelDetailByIndexTest2() {
-        Detail detail1 = new Detail(0, "test1", LocalDate.now(), LocalTime.now(), '+', "취소될 내역", 1000, 0);
-        Detail detail2 = new Detail(0, "test1", LocalDate.now(), LocalTime.now(), '+', "취소되지 않을 내역", 2000, 0);
-        Detail addedDetail = detailService.addDetail(detail1);
-        detailService.addDetail(detail2);
-        Detail detail3 = detailService.cancelDetailByIndex(addedDetail.getIndex());
-        Assertions.assertThat(detail3.getBalance()).isEqualTo(2000);
-    }
+
 
     @Test
     @DisplayName("존재하지 않는 인덱스를 입력했을 경우")
-    void cancelDetailByIndexErrorTest1() {
-        Assertions.assertThatThrownBy(() -> detailService.cancelDetailByIndex(-1)).isInstanceOf(RuntimeException.class);
+    void updateDetailErrorTest1() {
+        Detail detail1 = new Detail("test1", LocalDate.now(), LocalTime.now(), '+', "수정될 내역", 1000);
+        int index = detailService.addDetail(detail1);
+
+        Assertions.assertThatThrownBy(() -> detailService.editDetail(new Detail(-1, detail1.getUserId(), LocalDate.now(), LocalTime.now(), '+', "수정한 내역", 0))).isInstanceOf(IllegalStateException.class).hasMessage("해당되는 내역이 존재하지 않습니다.");
     }
 
     @Test
-    @DisplayName("잔액이 입금 취소할 금액보다 작은 경우")
+    @DisplayName("잔액이 수정한 내역으로 0보다 작아질 경우")
     void cancelDetailByIndexErrorTest2() {
-        Detail detail1 = new Detail(0, "test1", LocalDate.now(), LocalTime.now(), '+', "취소할 내역", 2000, 0);
-        Detail detail2 = new Detail(0, "test1", LocalDate.now(), LocalTime.now(), '-', "잔액 감소", 1000, 0);
-        Detail addedDetail = detailService.addDetail(detail1);
+        Detail detail1 = new Detail("test1", LocalDate.now(), LocalTime.now(), '+', "취소할 내역", 2000);
+        Detail detail2 = new Detail("test1", LocalDate.now(), LocalTime.now(), '-', "잔액 감소", 1000);
+
+        int index = detailService.addDetail(detail1);
         detailService.addDetail(detail2);
-        Assertions.assertThatThrownBy(() -> detailService.cancelDetailByIndex(addedDetail.getIndex())).isInstanceOf(RuntimeException.class);
+
+        Assertions.assertThatThrownBy(
+                () -> detailService.editDetail(new Detail(index, "test1", LocalDate.now(), LocalTime.now(), '+', "수정한 내역", 500))
+        ).isInstanceOf(IllegalStateException.class).hasMessage("잔액이 0보다 작아져 수정할 수 없습니다.");
     }
 }

@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
 @Data
-public class DetailForm {
+public class AddDetailForm {
     @NotEmpty
     private String userId;
     @NotEmpty
@@ -13,4 +13,11 @@ public class DetailForm {
     private String detail;
     @NotEmpty
     private int amount;
+
+    public AddDetailForm(String userId, char type, String detail, int amount) {
+        this.userId = userId;
+        this.type = type;
+        this.detail = detail;
+        this.amount = amount;
+    }
 }

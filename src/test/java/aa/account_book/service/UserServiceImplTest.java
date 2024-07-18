@@ -19,25 +19,19 @@ class UserServiceImplTest {
 
     @BeforeEach
     void beforeEach() {
-        userService.registerUser( new User("test1", "pw1", "name1"));
+        userService.registerUser( new User("test1", "pw1", "name1", 0));
     }
 
     @Test
     void registerUserSuccess() {
-       userService.registerUser(new User("test2", "pw2", "name2"));
+       userService.registerUser(new User("test2", "pw2", "name2", 0));
         Assertions.assertThat(userService.findUserById("test2").get().getName()).isEqualTo("name2");
     }
 
     @Test
     void registerUserFail() {
         Assertions.assertThatThrownBy(() -> userService.registerUser(
-                new User("test1", "pw2", "name2")
+                new User("test1", "pw2", "name2", 0)
         )).isInstanceOf(IllegalStateException.class);
-    }
-
-    @Test
-    void withdrawUser() {
-        userService.withdrawUser("test1", "pw1");
-        Assertions.assertThat(userService.findAllUser().size()).isEqualTo(0);
     }
 }

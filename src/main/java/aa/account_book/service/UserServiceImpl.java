@@ -33,23 +33,10 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public void withdrawUser(String userId, String password) {
-        if(findUserById(userId).isPresent()) {
-            if (findUserById(userId).get().getPassword().equals(password)) userRepository.deleteUserByUserId(userId);
-            else throw new IllegalStateException("비밀번호가 일치하지 않습니다");
-        }
-    }
-
-    @Override
-    public void editUserInfo(User user) {
-
-    }
-
-    @Override
     public User login(String userId, String password) {
         return userRepository
                 .readUserById(userId)
                 .filter(user -> user.getPassword().equals(password))
-                .orElse(new User("", "", ""));
+                .orElse(null);
     }
 }
