@@ -45,7 +45,7 @@ public class DetailController {
         }
     }
 
-    @PostMapping("/detail/today/edit")
+    @PostMapping("/detail/today/")
     public ResponseEntity<ResponseWrapper> addDetail(@RequestBody AddDetailForm form) {
         ResponseWrapper resWrapper = new ResponseWrapper();
 
@@ -61,7 +61,7 @@ public class DetailController {
         }
     }
 
-    @PutMapping("/detail/today/")
+    @PatchMapping("/detail/today/edit")
     public ResponseEntity<ResponseWrapper> editDetail(
         @RequestBody EditDetailForm form
     ) {
