@@ -39,7 +39,7 @@ public class DetailController {
             return new ResponseEntity<>(resWrapper, HttpStatus.ACCEPTED);
         } catch (RuntimeException e) {
             resWrapper.setMessage(e.getMessage());
-            return new ResponseEntity<>(resWrapper, HttpStatus.valueOf(e.toString()));
+            return new ResponseEntity<>(resWrapper, HttpStatus.BAD_REQUEST);
         }
     }
 
