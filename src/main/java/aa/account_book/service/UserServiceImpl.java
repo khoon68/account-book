@@ -34,9 +34,9 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public User login(String userId, String password) {
-        return userRepository
-                .readUserById(userId)
-                .filter(user -> user.getPassword().equals(password))
-                .orElse(null);
+        Optional<User> optionalUser = userRepository.readUserById(userId);
+        if(optionalUser.isPresent() && optionalUser.get().getPassword().equals(password)) {
+            return optionalUser.get();
+        } else return null;
     }
 }

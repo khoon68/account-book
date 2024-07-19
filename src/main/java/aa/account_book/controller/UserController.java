@@ -82,7 +82,7 @@ public class UserController {
         }
 
         User loginUser = userService.login(form.getUserId(), form.getPassword());
-        if(loginUser.getUserId().isEmpty()) {
+        if(loginUser == null) {
             resWrapper.setSuccess("no");
             resWrapper.setMessage("일치하는 계정 정보를 찾을 수 없습니다.");
             return new ResponseEntity<>(resWrapper, HttpStatus.CONFLICT);
