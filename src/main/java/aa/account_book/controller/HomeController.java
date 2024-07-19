@@ -15,7 +15,6 @@ public class HomeController {
     public ResponseEntity<ResponseWrapper<Boolean>> getUserSessionStatus(HttpServletRequest req) {
         HttpSession session = req.getSession(false);
         ResponseWrapper<Boolean> resWrapper = new ResponseWrapper<>();
-        resWrapper.setSuccess("yes");
         if(session == null || session.getAttribute(SessionConst.LOGIN_SESSION) == null) resWrapper.setData(false);
         else resWrapper.setData(true);
 

@@ -44,7 +44,6 @@ public class UserController {
         ResponseWrapper resWrapper = new ResponseWrapper();
 
         if(bindingResult.hasErrors()) {
-            resWrapper.setSuccess("no");
             resWrapper.setMessage("비어있는 칸이 있습니다.");
             return new ResponseEntity<>(resWrapper, HttpStatus.BAD_REQUEST);
         }
@@ -57,11 +56,9 @@ public class UserController {
                     0
             );
             userService.registerUser(user);
-            resWrapper.setSuccess("yes");
             return new ResponseEntity<>(resWrapper, HttpStatus.CREATED);
         } catch(Exception e) {
-            resWrapper.setSuccess("no");
-            resWrapper.setSuccess(e.getMessage());
+            resWrapper.setMessage(e.getMessage());
             return new ResponseEntity<>(resWrapper, HttpStatus.CONFLICT);
         }
     }
@@ -75,7 +72,6 @@ public class UserController {
         ResponseWrapper resWrapper = new ResponseWrapper();
 
         if(bindingResult.hasErrors()) {
-            resWrapper.setSuccess("no");
             resWrapper.setMessage("비어있는 칸이 있습니다.");
 
             return new ResponseEntity<>(resWrapper, HttpStatus.BAD_REQUEST);
@@ -83,7 +79,6 @@ public class UserController {
 
         User loginUser = userService.login(form.getUserId(), form.getPassword());
         if(loginUser == null) {
-            resWrapper.setSuccess("no");
             resWrapper.setMessage("일치하는 계정 정보를 찾을 수 없습니다.");
             return new ResponseEntity<>(resWrapper, HttpStatus.CONFLICT);
         }
@@ -92,8 +87,6 @@ public class UserController {
         session.setMaxInactiveInterval(30 * 60);
         session.setAttribute(SessionConst.LOGIN_SESSION, loginUser);
         sessionManager.addSession(loginUser.getUserId(), session);
-
-        resWrapper.setSuccess("yes");
 
         return new ResponseEntity<>(resWrapper, HttpStatus.ACCEPTED);
     }
@@ -108,30 +101,24 @@ public class UserController {
         }
 
         ResponseWrapper resWrapper = new ResponseWrapper();
-        resWrapper.setSuccess("yes");
         return new ResponseEntity<>(resWrapper, HttpStatus.OK);
     }
 
     @GetMapping("/login/state")
-    public ResponseEntity<ResponseWrapper<Map<String, Boolean>>> showAllUserLoginState() {
-        ResponseWrapper<Map<String, Boolean>> resWrapper = new ResponseWrapper<>();
-
-        List<User> allUser = userService.findAllUser();
+    public ResponseEntity<ResponseWrapper<Boolean>> showAllUserLoginState(HttpServletRequest req) {
+        ResponseWrapper<Boolean> resWrapper = new ResponseWrapper<>();
         List<String> loginUserIdList = sessionManager.getLoginUserIdList();
 
-        Map<String, Boolean> allUserLoginState = new ConcurrentHashMap<>();
+        HttpSession session = req.getSession(false);
 
-        for(User user: allUser) {
-            if(loginUserIdList.contains(user.getUserId()))
-                allUserLoginState.put(user.getUserId(), true);
-            else allUserLoginState.put(user.getUserId(), false);
-        }
-
-        resWrapper.setData(allUserLoginState);
-        resWrapper.setSuccess("yes");
+        if(session != null && session.getAttribute(SessionConst.LOGIN_SESSION) != null) {
+            User loginUser = (User) session.getAttribute(SessionConst.LOGIN_SESSION);
+            if(loginUserIdList.contains(loginUser.getUserId())) resWrapper.setData(true);
+            else resWrapper.setData(false);
+        } else resWrapper.setData(false);
 
         return new ResponseEntity<>(resWrapper, HttpStatus.OK);
-    }
+   }
 
 
 }

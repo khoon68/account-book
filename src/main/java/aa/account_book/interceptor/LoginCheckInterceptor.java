@@ -41,7 +41,6 @@ public class LoginCheckInterceptor implements HandlerInterceptor {
             }
 
             ResponseWrapper<Object> resWrapper = new ResponseWrapper<>();
-            resWrapper.setSuccess("no");
             resWrapper.setMessage("현재 로그인 상태가 아니거나 세션이 만료되었습니다.");
 
             ObjectMapper objectMapper = new ObjectMapper();

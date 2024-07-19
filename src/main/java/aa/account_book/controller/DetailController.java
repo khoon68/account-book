@@ -34,12 +34,10 @@ public class DetailController {
 
         try {
             List<Detail> detailListToday = detailService.findDetailListToday(user.getUserId());
-            resWrapper.setSuccess("yes");
             resWrapper.setMessage("none");
             resWrapper.setData(detailListToday);
             return new ResponseEntity<>(resWrapper, HttpStatus.ACCEPTED);
         } catch (RuntimeException e) {
-            resWrapper.setSuccess("no");
             resWrapper.setMessage(e.getMessage());
             return new ResponseEntity<>(resWrapper, HttpStatus.valueOf(e.toString()));
         }
@@ -55,10 +53,8 @@ public class DetailController {
         Detail detail = new Detail(loginUser.getUserId(), LocalDate.now(), LocalTime.now(), form.getType(), form.getDetail(), form.getAmount());
         try {
             detailService.addDetail(detail);
-            resWrapper.setSuccess("yes");
             return new ResponseEntity<>(resWrapper, HttpStatus.CREATED);
         } catch (Exception e) {
-            resWrapper.setSuccess("no");
             resWrapper.setMessage(e.getMessage());
             return new ResponseEntity<>(resWrapper, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -73,10 +69,8 @@ public class DetailController {
 
         try {
             detailService.editDetail(detail);
-            resWrapper.setSuccess("yes");
             return new ResponseEntity<>(resWrapper, HttpStatus.CREATED);
         } catch (Exception e) {
-            resWrapper.setSuccess("no");
             resWrapper.setMessage(e.getMessage());
             return new ResponseEntity<>(resWrapper, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -95,10 +89,8 @@ public class DetailController {
             resWrapper.setData(
                     detailService.findDetailListByMonth(LocalDate.parse(yearMonth + "-01"), loginUser.getUserId())
             );
-            resWrapper.setSuccess("yes");
             return new ResponseEntity<>(resWrapper, HttpStatus.ACCEPTED);
         } catch (Exception e) {
-            resWrapper.setSuccess("no");
             resWrapper.setMessage(e.getClass().toString() + "/n" + e.getMessage());
             return new ResponseEntity<>(resWrapper, HttpStatus.INTERNAL_SERVER_ERROR);
         }
