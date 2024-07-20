@@ -30,6 +30,12 @@ public class LoginCheckInterceptor implements HandlerInterceptor {
             HttpServletResponse res,
             Object handler
     ) throws IOException {
+
+        if("OPTIONS".equalsIgnoreCase(req.getMethod())) {
+            res.setStatus(HttpServletResponse.SC_OK);
+            return false;
+        }
+
         HttpSession session = req.getSession(false);
         boolean isLogin = session != null && session.getAttribute(SessionConst.LOGIN_SESSION) != null;
 
