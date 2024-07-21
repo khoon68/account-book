@@ -30,10 +30,10 @@ public class DetailController {
         ResponseWrapper<List<Detail>> resWrapper = new ResponseWrapper<>();
 
         HttpSession session = req.getSession(false);
-        User user = (User) session.getAttribute(SessionConst.LOGIN_SESSION);
+        User loginUser = (User) session.getAttribute(SessionConst.LOGIN_SESSION);
 
         try {
-            List<Detail> detailListToday = detailService.findDetailListToday(user.getUserId());
+            List<Detail> detailListToday = detailService.findDetailListToday(loginUser.getUserId());
             resWrapper.setMessage("none");
             resWrapper.setData(detailListToday);
             return new ResponseEntity<>(resWrapper, HttpStatus.ACCEPTED);
@@ -62,10 +62,15 @@ public class DetailController {
 
     @PatchMapping("/detail/today/edit")
     public ResponseEntity<ResponseWrapper> editDetail(
-        @RequestBody EditDetailForm form
+        @RequestBody EditDetailForm form,
+        HttpServletRequest req
     ) {
         ResponseWrapper resWrapper = new ResponseWrapper();
-        Detail detail = new Detail(form.getIndex(), form.getUserId(), form.getDate(), form.getTime(),form.getType(), form.getDetail(), form.getAmount());
+
+        HttpSession session = req.getSession(false);
+        User loginUser = (User) session.getAttribute(SessionConst.LOGIN_SESSION);
+
+        Detail detail = new Detail(form.getIndex(), loginUser.getUserId(), form.getDate(), form.getTime(),form.getType(), form.getDetail(), form.getAmount());
 
         try {
             detailService.editDetail(detail);
