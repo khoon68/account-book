@@ -15,6 +15,8 @@ public class EditDetailForm {
     String detail;
     int amount;
 
+    public EditDetailForm() {}
+
     public EditDetailForm(int index, String userId, LocalDate date, LocalTime time, char type, String detail, int amount) {
         this.index = index;
         this.userId = userId;
